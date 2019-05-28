@@ -25,9 +25,18 @@ export default class Calculator extends Component {
     firstIndexOnUse = () => {
         return this.state.currentIndexOnUse === 0;
     };
-
+    
     hasPeriod = (num) => {
         return num === '.' && this.state.displayValue.includes('.')
+    };
+
+    setNewValue = (newValue) => {
+        const index = this.state.currentIndexOnUse;
+        const values = [ ...this.state.values ];
+        
+        values[index] = newValue;
+
+        this.setState({ values });
     };
     
     clearMemory = () => {
@@ -67,13 +76,8 @@ export default class Calculator extends Component {
         this.setState({ displayValue, clearDisplay: false });
 
         if (num !== '.') {
-            const index = this.state.currentIndexOnUse;
             const newValue = parseFloat(displayValue);
-            const values = [ ...this.state.values ];
-            
-            values[index] = newValue;
-
-            this.setState({ values });
+            this.setNewValue(newValue);
         }
     };
 
