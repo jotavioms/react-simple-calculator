@@ -8,62 +8,71 @@ const initialState = {
     clearDisplay: false,
     operation: null,
     values: [0, 0],
-    current: 0,
+    currentIndexOnUse: 0,
 };
 
 export default class Calculator extends Component {
     state = { ...initialState };
 
+    calculateValues = (values, operation) => {
+        try {
+            return eval(`${values[0]} ${operation} ${values[1]}`);
+        } catch(e) {
+            return this.state.values[0];
+        }
+    };
+    
+    firstIndexOnUse = () => {
+        return this.state.currentIndexOnUse === 0;
+    };
+
+    hasPeriod = (num) => {
+        return num === '.' && this.state.displayValue.includes('.')
+    };
+    
     clearMemory = () => {
         this.setState({ ...initialState })
     };
 
-    calculateValues = (values, operation) => {
-        try {
-            values[0] = eval(`${values[0]} ${operation} ${values[1]}`);
-        } catch(e) {
-            values[0] = this.state.values[0];
-        }
-    };
-
     setOperation = operation => {
-        if (this.state.current === 0) {
-            this.setState({ operation, current: 1, clearDisplay: true });
+        if (this.firstIndexOnUse()) {
+            this.setState({ operation, currentIndexOnUse: 1, clearDisplay: true });
         } else {
-            const equals = this.state.operation === '=';
+            const isEqual = operation === '=';
             const currentOperation = this.state.operation;
-
             const values = [ ...this.state.values ];
 
-            this.calculateValues(values, currentOperation);
-        
+            values[0] = this.calculateValues(values, currentOperation);
             values[1] = 0;
 
             this.setState({
                 displayValue: values[0],
-                operation: equals ? null : operation,
-                current: equals ? 0 : 1,
-                clearDisplay: !equals,
+                operation: isEqual ? null : operation,
+                currentIndexOnUse: isEqual ? 0 : 1,
+                clearDisplay: !isEqual,
                 values,
             })
         }
     };
 
     addDigit = num => {
-        if (num === '.' && this.state.displayValue.includes('.')) {
+        if (this.hasPeriod(num)) {
             return;
         }
 
         const clearDisplay = this.state.displayValue === '0' || this.state.clearDisplay;
         const currentValue = clearDisplay ? '' : this.state.displayValue;
         const displayValue = currentValue + num;
+
         this.setState({ displayValue, clearDisplay: false });
 
         if (num !== '.') {
-            const index = this.state.current;
+            const index = this.state.currentIndexOnUse;
             const newValue = parseFloat(displayValue);
             const values = [ ...this.state.values ];
+            
             values[index] = newValue;
+
             this.setState({ values });
         }
     };
